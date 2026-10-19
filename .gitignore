@@ -1,0 +1,7 @@
+# Dependencies (never checked in)
+node_modules/
+
+# Extracted DSH reference material: regenerated on demand by tools/asar-*.mjs
+tools/ref/
+tools/asar-index.json
+tools/harness/chat.css

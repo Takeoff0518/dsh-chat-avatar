@@ -1,0 +1,8 @@
+# dsh-chat-avatar bundle patch
+#
+# One loader entry: the Node half is a no-op plugin (this feature is pure
+# client UI), and the Client half is declared through `dsh.client` in
+# package.json, so the browser loads `lib/client.js` next to the Web app.
+- insert:
+    - id: chat-avatar
+      name: 'dsh-chat-avatar'

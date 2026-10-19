@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh">
+	<head>
+		<meta charset="utf-8" />
+		<title>roundness under a corner override</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				background: #fff;
+				font: 12px/18px -apple-system, "Segoe UI", system-ui, sans-serif;
+				color: #6b7280;
+			}
+			.row {
+				display: flex;
+				gap: 16px;
+				align-items: center;
+				padding: 10px 0;
+			}
+			.box {
+				width: 56px;
+				height: 56px;
+				background-color: #eee;
+				background-position: center;
+				background-size: cover;
+				background-repeat: no-repeat;
+			}
+			/* Case A: a page rule reshapes the corners to a squircle and no clip applies. */
+			.squircle {
+				border-radius: 16px;
+			}
+			/* Case B: the corner rule is fought back by !important + clip (plugin's own). */
+			.circle {
+				border-radius: 50% !important;
+				clip-path: circle(50% at 50% 50%) !important;
+			}
+			.tag {
+				width: 320px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="sheet"></div>
+		<script>
+			window.__ModuleLoader__ = { load: (r) => (window.__entry = r) };
+		</script>
+		<script src="../../dsh-chat-avatar/lib/client.js"></script>
+		<script>
+			const stubReact = {
+				createElement: () => null,
+				memo: (v) => v,
+				useRef: () => ({ current: null }),
+				useState: (v) => [v, () => {}],
+				useEffect: () => {},
+			};
+			const mod = window.__entry.factory((s) => (s === "react" ? stubReact : {}));
+			mod.apply({
+				slots: { inject: (name, cb) => cb(), register: () => () => {} },
+			});
+			const root = document.documentElement;
+			const user = root.style.getPropertyValue("--dsh-ca-user");
+			const ai = root.style.getPropertyValue("--dsh-ca-ai");
+
+			const cases = [
+				["squircle (page override, no clip)", "squircle"],
+				["plugin rule (radius + clip)", "circle"],
+			];
+			const sheet = document.getElementById("sheet");
+			for (const [label, cls] of cases) {
+				const row = document.createElement("div");
+				row.className = "row";
+				const tag = document.createElement("span");
+				tag.className = "tag";
+				tag.textContent = label;
+				row.append(tag);
+				for (const image of [user, ai]) {
+					const box = document.createElement("div");
+					box.className = "box " + cls;
+					box.style.backgroundImage = image;
+					row.append(box);
+				}
+				sheet.append(row);
+			}
+			document.title = "ok";
+		</script>
+	</body>
+</html>

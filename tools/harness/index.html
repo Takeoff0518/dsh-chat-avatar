@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh">
+	<head>
+		<meta charset="utf-8" />
+		<title>chat-avatar harness</title>
+		<style>
+			/* Approximates the shipped conversation column + message styles (including
+			   the real type scale) so the avatar geometry can be measured. */
+			:root {
+				--dsw-alias-label-primary: #1c1c1e;
+				--dsw-alias-label-secondary: #6b7280;
+				--dsw-alias-label-tertiary: #9ca3af;
+				--dsw-alias-border-l1: #e5e7eb;
+				--dsw-alias-border-l2: #e5e7eb;
+				--dsw-alias-bg-base: #ffffff;
+				--dsw-alias-bg-layer-2: #f4f4f5;
+				--dsw-alias-brand-primary: #4d6bfe;
+				--dsw-specific-bubble: #eef1f8;
+				--dsw-radius-xl: 14px;
+				--dsh-chat-content-width: 748px;
+				--dsh-content-font-delta: 0px;
+			}
+			body {
+				margin: 0;
+				background: #fff;
+				font: 14px/22px -apple-system, "Segoe UI", system-ui, sans-serif;
+				color: #1c1c1e;
+			}
+			.scroll {
+				padding: 16px 32px;
+				container-type: inline-size;
+			}
+			.column {
+				max-width: var(--dsh-chat-content-width);
+				flex-direction: column;
+				width: 100%;
+				margin: 0 auto;
+				display: flex;
+			}
+			.column > :not([hidden]) ~ :not([hidden]) {
+				margin-top: 6px;
+			}
+			.flowItem {
+				min-width: 0;
+			}
+			.flowItem:is(:empty, :has(> [data-slot="conversation.chat.node"]:empty)) {
+				height: 0;
+			}
+			.userRow {
+				flex-direction: column;
+				align-items: flex-end;
+				gap: 6px;
+				display: flex;
+			}
+			.userStack {
+				min-width: 0;
+				max-width: min(calc(var(--dsh-chat-content-width, 748px) * 0.702), 82%);
+				flex-direction: column;
+				align-items: flex-end;
+				gap: 8px;
+				display: flex;
+			}
+			.bubble {
+				background: var(--dsw-specific-bubble);
+				border-radius: var(--dsw-radius-xl);
+				max-width: 100%;
+				white-space: pre-wrap;
+				word-break: break-word;
+				padding: 10px 16px;
+				font-size: var(--dsh-content-font-size, 14px);
+				line-height: calc(22px + var(--dsh-content-font-delta, 0px));
+			}
+			.assistant {
+				color: #1c1c1e;
+				font-size: var(--dsh-content-font-size, 14px);
+				line-height: calc(24px + var(--dsh-content-font-delta, 0px));
+			}
+			.assistant p {
+				margin: 0 0 8px;
+			}
+			.assistant p:last-child {
+				margin-bottom: 0;
+			}
+			.reasoning {
+				color: var(--dsw-alias-label-tertiary);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="scroll" data-conversation-scroll>
+			<div class="column">
+				<div class="flowItem" data-chat-flow-kind="assistant-step" data-chat-group-part="response">
+					<div data-slot="conversation.chat.node">
+						<div class="assistant">
+							<p>我先看一下插件结构，然后把头像挂在消息行上。</p>
+							<p>这样不会替换任何 Chat 节点渲染器。</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="flowItem" data-chat-flow-kind="user">
+					<div data-slot="conversation.chat.node">
+						<div class="userRow">
+							<div class="userStack">
+								<div class="bubble">帮我给聊天加上圆形头像吧，最好能自己换图片。</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="flowItem" data-chat-flow-kind="assistant-step" data-chat-group-part="reasoning">
+					<div data-slot="conversation.chat.node">
+						<div class="assistant reasoning">思考中……这一行不应出现头像。</div>
+					</div>
+				</div>
+
+				<div class="flowItem" data-chat-flow-kind="assistant-step" data-chat-group-part="response">
+					<div data-slot="conversation.chat.node">
+						<div class="assistant"><p>第一段回复：设置页放在 设置 → 消息头像。</p></div>
+					</div>
+				</div>
+				<div class="flowItem" data-chat-flow-kind="assistant-step" data-chat-group-part="response">
+					<div data-slot="conversation.chat.node">
+						<div class="assistant"><p>第二段回复：大小 20–64px 可调。</p></div>
+					</div>
+				</div>
+
+				<div class="flowItem" data-chat-flow-kind="assistant-step">
+					<div data-slot="conversation.chat.node"></div>
+				</div>
+
+				<div class="flowItem" data-chat-flow-kind="user">
+					<div data-slot="conversation.chat.node">
+						<div class="userRow">
+							<div class="userStack">
+								<div class="bubble">
+									这是一条比较长的用户消息，用来确认右侧头像的留白不会把气泡挤出内容列，也不会破坏原有的右对齐和最大宽度约束。
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			window.__ModuleLoader__ = {
+				load(registration) {
+					window.__entry = registration;
+				},
+			};
+		</script>
+		<script src="../../dsh-chat-avatar/lib/client.js"></script>
+		<script>
+			const stubReact = {
+				createElement: () => null,
+				memo: (value) => value,
+				useRef: () => ({ current: null }),
+				useState: (value) => [value, () => {}],
+				useEffect: () => {},
+			};
+			const mod = window.__entry.factory((specifier) => (specifier === "react" ? stubReact : {}));
+			const seen = [];
+			mod.apply({
+				slots: {
+					inject: (name, callback) => {
+						seen.push({ injected: name });
+						callback();
+					},
+					register: (options) => {
+						seen.push({ registered: options.name, id: options.id, order: options.order });
+						return () => {};
+					},
+				},
+			});
+
+			/** Horizontal boxes of the two reference messages (they must not move). */
+			const boxes = () => {
+				const assistant = document.querySelector(".assistant").getBoundingClientRect();
+				const bubble = document.querySelector(".bubble").getBoundingClientRect();
+				return {
+					assistantLeft: Math.round(assistant.left),
+					assistantWidth: Math.round(assistant.width),
+					bubbleRight: Math.round(bubble.right),
+					bubbleWidth: Math.round(bubble.width),
+				};
+			};
+
+			/** Center of the first rendered line box inside `root`. */
+			const firstLineCenter = (root) => {
+				const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+				let node = walker.nextNode();
+				while (node !== null && node.textContent.trim() === "") node = walker.nextNode();
+				if (node === null) return null;
+				const range = document.createRange();
+				range.selectNodeContents(node);
+				const rect = range.getClientRects()[0];
+				return rect ? rect.top + rect.height / 2 : null;
+			};
+
+			/** Center of one avatar pseudo-element. */
+			const faceCenter = (row, pseudo) => {
+				const style = getComputedStyle(row, pseudo);
+				return row.getBoundingClientRect().top + parseFloat(style.top) + parseFloat(style.height) / 2;
+			};
+
+			const assistantRow = document.querySelector('[data-chat-flow-kind="assistant-step"]');
+			const userRow = document.querySelector('[data-chat-flow-kind="user"]');
+			const round = (value) => Math.round(value * 10) / 10;
+			const vertical = {
+				aiDelta: round(faceCenter(assistantRow, "::before") - firstLineCenter(assistantRow.querySelector(".assistant"))),
+				userDelta: round(faceCenter(userRow, "::after") - firstLineCenter(userRow.querySelector(".bubble"))),
+			};
+
+			const on = boxes();
+			document.documentElement.removeAttribute("data-dsh-chat-avatar");
+			const off = boxes();
+			document.documentElement.setAttribute("data-dsh-chat-avatar", "");
+
+			document.title =
+				"measure " +
+				JSON.stringify({
+					scrollWidth: document.querySelector(".scroll").clientWidth,
+					on,
+					off,
+					same: JSON.stringify(on) === JSON.stringify(off),
+					vertical,
+					registered: seen.length,
+				});
+		</script>
+	</body>
+</html>
