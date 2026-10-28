@@ -84,6 +84,13 @@
 			.reasoning {
 				color: var(--dsw-alias-label-tertiary);
 			}
+			/* Simulates dsh-claude-style 0.19.5: it stamps `data-dsh-claude-laid-out`
+			   on every visible non-user chat row and then applies
+			   `content-visibility: auto` there, which brings paint containment. */
+			body[data-sim-claude] [data-chat-flow-kind]:not([data-chat-flow-kind="user"]) {
+				content-visibility: auto;
+				contain-intrinsic-size: auto 240px;
+			}
 		</style>
 	</head>
 	<body>
@@ -227,6 +234,11 @@
 					vertical,
 					registered: seen.length,
 				});
+
+			/* `?theme=1` turns on the simulated claude-style containment. */
+			if (new URLSearchParams(location.search).has("theme")) {
+				document.body.setAttribute("data-sim-claude", "");
+			}
 		</script>
 	</body>
 </html>

@@ -108,37 +108,48 @@ window.__ModuleLoader__.load({
 			   inside 10px of its own top padding. */
 			"html[data-dsh-chat-avatar]{--dsh-ca-size:32px;--dsh-ca-gap:10px;--dsh-ca-user:none;--dsh-ca-ai:none;" +
 				"--dsh-ca-line-ai:calc(24px + var(--dsh-content-font-delta,0px));" +
-				"--dsh-ca-line-user:calc(22px + var(--dsh-content-font-delta,0px))}",
+				"--dsh-ca-line-user:calc(22px + var(--dsh-content-font-delta,0px));" +
+				"--dsh-ca-gutter:calc(var(--dsh-ca-size) + var(--dsh-ca-gap))}",
 			/* A row is a positioning context and reserves the face's height plus the room
 			   the face needs above the first line, so `top` below can center it on that
-			   line. Only the vertical axis grows; no text ever moves sideways. */
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]{--dsh-ca-pad:max(0px,calc((var(--dsh-ca-size) - var(--dsh-ca-line-ai)) * 0.5));position:relative;padding-top:var(--dsh-ca-pad);min-height:calc(var(--dsh-ca-size) + 2px)}',
+			   line. Only the vertical axis grows; no text ever moves.
+			   Horizontally the row borrows the column margin through a negative
+			   `margin-*` and hands the same length back as `padding-*`: the content box
+			   keeps its exact position, while the face's slot becomes part of the row's
+			   own box. That matters because paint containment — e.g. the
+			   `content-visibility: auto` that theme plugins use on chat rows — clips
+			   anything painted outside the row, and a face offset into the column
+			   margin would simply disappear. */
+			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]{--dsh-ca-pad:max(0px,calc((var(--dsh-ca-size) - var(--dsh-ca-line-ai)) * 0.5));position:relative;margin-left:calc(-1 * var(--dsh-ca-gutter));padding-left:var(--dsh-ca-gutter);padding-top:var(--dsh-ca-pad);min-height:calc(var(--dsh-ca-size) + 2px)}',
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="user"],',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]{--dsh-ca-pad:max(0px,calc((var(--dsh-ca-size) - var(--dsh-ca-line-user)) * 0.5 - 10px));position:relative;padding-top:var(--dsh-ca-pad);min-height:calc(var(--dsh-ca-size) + 2px)}',
+			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]{--dsh-ca-pad:max(0px,calc((var(--dsh-ca-size) - var(--dsh-ca-line-user)) * 0.5 - 10px));position:relative;margin-right:calc(-1 * var(--dsh-ca-gutter));padding-right:var(--dsh-ca-gutter);padding-top:var(--dsh-ca-pad);min-height:calc(var(--dsh-ca-size) + 2px)}',
 			/* The avatar itself: a hard circle regardless of any inherited radius. */
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="user"]::after,',
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]::after,',
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:not([data-chat-group-part="reasoning"])::before{content:"";position:absolute;width:var(--dsh-ca-size);height:var(--dsh-ca-size);border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;background-position:center;background-size:cover;background-repeat:no-repeat;pointer-events:none;z-index:1}',
-			/* Gutter placement: AI on the left of the text, the user on the right of the
-			   bubble, and in both cases the face is centered on the first text line. */
+			/* Gutter placement inside the row's own padding: AI on the left of the text,
+			   the user on the right of the bubble, both centered on the first text line. */
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="user"]::after,',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]::after{right:calc(-1 * (var(--dsh-ca-size) + var(--dsh-ca-gap)));top:calc(var(--dsh-ca-pad) + 10px + (var(--dsh-ca-line-user) - var(--dsh-ca-size)) * 0.5);background-image:var(--dsh-ca-user)}',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:not([data-chat-group-part="reasoning"])::before{left:calc(-1 * (var(--dsh-ca-size) + var(--dsh-ca-gap)));top:calc(var(--dsh-ca-pad) + (var(--dsh-ca-line-ai) - var(--dsh-ca-size)) * 0.5);background-image:var(--dsh-ca-ai)}',
+			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]::after{right:0;top:calc(var(--dsh-ca-pad) + 10px + (var(--dsh-ca-line-user) - var(--dsh-ca-size)) * 0.5);background-image:var(--dsh-ca-user)}',
+			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:not([data-chat-group-part="reasoning"])::before{left:0;top:calc(var(--dsh-ca-pad) + (var(--dsh-ca-line-ai) - var(--dsh-ca-size)) * 0.5);background-image:var(--dsh-ca-ai)}',
 			/* Empty or folded rows must not paint a floating avatar nor reserve space. */
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:has(>[data-slot="conversation.chat.node"]:empty)::before{display:none}',
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:has(>[data-slot="conversation.chat.node"]:empty){min-height:0;padding-top:0}',
+			/* Rows inside a folded "step process" panel are meta rows in a bordered
+			   card with its own padding: no face there, and no borrowed margin either. */
+			'html[data-dsh-chat-avatar] [data-step-process-content] [data-chat-flow-kind]::before,',
+			'html[data-dsh-chat-avatar] [data-step-process-content] [data-chat-flow-kind]::after{display:none}',
+			'html[data-dsh-chat-avatar] [data-step-process-content] [data-chat-flow-kind]{margin-left:0;margin-right:0;padding-left:0;padding-right:0}',
 			/* A turn answers in several consecutive steps: one avatar per run, like an
 			   IM message group, instead of a stack of identical faces. */
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:not([hidden]):not([data-turn-process-hidden]):not([data-chat-group-part="reasoning"])+[data-chat-flow-kind="assistant-step"]:not([hidden]):not([data-turn-process-hidden])::before{display:none}',
-			/* Narrow panes have no margin to borrow: reserve an in-row gutter instead so
-			   nothing clips. The chat scroll is the nearest inline-size container. */
+			/* Narrow panes have no margin to borrow: keep the padding (an in-row gutter,
+			   so the text does move inward) and drop the borrowed margin.
+			   The chat scroll is the nearest inline-size container. */
 			"@container (max-width: 1100px){",
+			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]{margin-left:0}',
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="user"],',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]{padding-right:calc(var(--dsh-ca-size) + var(--dsh-ca-gap))}',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="user"]::after,',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]::after{right:0}',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]{padding-left:calc(var(--dsh-ca-size) + var(--dsh-ca-gap))}',
-			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]::before{left:0}',
+			'html[data-dsh-chat-avatar] [data-chat-flow-kind="steering"]{margin-right:0}',
 			'html[data-dsh-chat-avatar] [data-chat-flow-kind="assistant-step"]:has(>[data-slot="conversation.chat.node"]:empty){padding-left:0}',
 			"}",
 			/* Settings page. */

@@ -1,6 +1,6 @@
 {
   "name": "dsh-chat-avatar",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "IM-style round avatars beside user and AI chat messages, with custom images and adjustable size.",
   "type": "module",
   "license": "MIT",
